@@ -1,7 +1,7 @@
 'use client'
 import axios from 'axios'
 import Link from 'next/link'
-import { FormEvent } from 'react';
+import { FormEvent, useEffect } from 'react';
 export default function Home() {
   async function signIn(e : FormEvent) {
     e.preventDefault();
@@ -16,12 +16,18 @@ export default function Home() {
     }
     await axios.post("http://localhost:4000/auth/sessionLoginTest", registerUserInfo, { withCredentials: true })
     .then(res => {
-      console.log(res)
+      if(res.data) location.replace('/main')
     })
     .catch((err)=> console.log(err))
 
     return false;
   }
+  useEffect(()=>{
+    axios.get("http://localhost:4000/auth/sessionAuthTest", { withCredentials: true })
+    .then(res => { res.data ? location.replace('/main') : null})
+    .catch((err)=> console.log(err))
+  },[])
+  
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-black text-center mb-6 text-2xl">로그인</h1>
