@@ -49,3 +49,7 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+.google-btn:hover {
+  background: none !important;
+}

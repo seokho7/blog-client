@@ -2,7 +2,9 @@
 import axios from 'axios'
 import Link from 'next/link'
 import { FormEvent, useEffect } from 'react';
+import GoogleIcon from "../../../public/google.svg";
 export default function Home() {
+
   async function signIn(e : FormEvent) {
     e.preventDefault();
     const userInfo = document.querySelectorAll("input");
@@ -16,12 +18,20 @@ export default function Home() {
     }
     await axios.post("http://localhost:4000/auth/sessionLoginTest", registerUserInfo, { withCredentials: true })
     .then(res => {
-      if(res.data) location.replace('/main')
+      if(res.data) return location.replace('/main');
+      console.log("dd")
     })
     .catch((err)=> console.log(err))
 
     return false;
   }
+
+  async function googleLogin(e : FormEvent) {
+    e.preventDefault();
+
+    await axios.get("http://localhost:4000/auth/to-google", {withCredentials: true}).then(res => console.log(res));
+  }
+
   useEffect(()=>{
     axios.get("http://localhost:4000/auth/sessionAuthTest", { withCredentials: true })
     .then(res => { res.data ? location.replace('/main') : null})
@@ -39,14 +49,23 @@ export default function Home() {
         <label className="label">
           <span className="label-text text-black">비밀번호</span>
         </label>
-        <input name="USER_PW" type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20}/>
+        <input name="USER_PW" type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20} />
         <div className="form-control">
           <label className="cursor-pointer label justify-normal">
             <input type="checkbox" className="checkbox checkbox-accent mr-2" />
             <span className="label-text text-gray-500">이메일 저장</span>
           </label>
         </div>
-        <button className="btn btn-outline btn-success mt-6">로그인</button>
+          <button className="btn btn-outline btn-success mt-5">로그인</button>
+          <div className='sub-btn-wrap flex mt-3 justify-around gap-3'>
+            <button className="btn btn-outline google-btn flex-1" onClick={googleLogin}>
+              <p><GoogleIcon/></p>
+              <p className='ml-1 text-black'>구글 로그인</p>          
+            </button>
+            <button className='btn btn-outline flex-1'> 
+              <p>카카오 로그인</p>
+            </button>
+          </div>
       </form>
 
       <div className="form-control w-full max-w-xs">
