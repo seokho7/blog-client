@@ -26,17 +26,11 @@ export default function Home() {
     return false;
   }
 
-  async function googleLogin(e : FormEvent) {
-    e.preventDefault();
-
-    await axios.get("http://localhost:4000/auth/to-google", {withCredentials: true}).then(res => console.log(res));
-  }
-
-  useEffect(()=>{
-    axios.get("http://localhost:4000/auth/sessionAuthTest", { withCredentials: true })
-    .then(res => { res.data ? location.replace('/main') : null})
-    .catch((err)=> console.log(err))
-  },[])
+  // useEffect(()=>{
+  //   axios.get("http://localhost:4000/auth/sessionAuthTest", { withCredentials: true })
+  //   .then(res => { res.data ? location.replace('/main') : null})
+  //   .catch((err)=> console.log(err))
+  // },[])
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -58,9 +52,9 @@ export default function Home() {
         </div>
           <button className="btn btn-outline btn-success mt-5">로그인</button>
           <div className='sub-btn-wrap flex mt-3 justify-around gap-3'>
-            <button className="btn btn-outline google-btn flex-1" onClick={googleLogin}>
+            <button className="btn btn-outline google-btn flex-1">
               <p><GoogleIcon/></p>
-              <p className='ml-1 text-black'>구글 로그인</p>          
+              <Link href="http://localhost:4000/auth/to-google" className='ml-1 text-black'>구글 로그인</Link>          
             </button>
             <button className='btn btn-outline flex-1'> 
               <p>카카오 로그인</p>
