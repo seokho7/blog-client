@@ -52,18 +52,17 @@ export default function Home() {
           </label>
         </div>
           <button className="btn btn-outline btn-success mt-5">로그인</button>
-          <div className='sub-btn-wrap flex mt-3 justify-around gap-3'>
-            <button className="btn btn-outline google-btn flex-1">
-              <p><GoogleIcon/></p>
-              <Link href="http://localhost:4000/auth/to-google" className='ml-1 text-black'>구글 로그인</Link>          
-            </button>
-            <button className='btn btn-outline flex-1'> 
-              <p><GithubIcon/></p>
-              <Link href="http://localhost:4000/auth/to-github" className='ml-1 text-black'>깃허브 로그인</Link>  
-            </button>
-          </div>
       </form>
-
+      <div className='sub-btn-wrap flex mt-3 justify-around gap-3 w-full max-w-xs'>
+        <button className="btn btn-outline google-btn flex-1">
+          <p><GoogleIcon/></p>
+          <Link href="http://localhost:4000/auth/to-google" className='ml-1 text-black'>구글 로그인</Link>          
+        </button>
+        <button className='btn btn-outline flex-1'> 
+          <p><GithubIcon/></p>
+          <Link href="http://localhost:4000/auth/to-github" className='ml-1 text-black'>깃허브 로그인</Link>  
+        </button>
+      </div>
       <div className="form-control w-full max-w-xs">
         <div className="text-xs flex justify-around mt-6">
           <Link href={'/'} className="text-black text-gray-500">이메일 찾기</Link>

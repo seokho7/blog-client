@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 export default function Main() {
   let [init, setInit] = useState(false)
 
-  // useEffect(()=>{
-  //   axios.get("http://localhost:4000/auth/sessionAuthTest", { withCredentials: true })
-  //   .then(res => { res.data === true ? setInit(true) : null})
-  //   .catch((err)=> console.log(err))
-  // },[])
+  useEffect(()=>{
+    axios.get("http://localhost:4000/auth/info", { withCredentials: true })
+    .then(res => { res.data === true ? setInit(true) : null})
+    .catch((err)=> console.log(err))
+  },[])
   
 
   function start() {
