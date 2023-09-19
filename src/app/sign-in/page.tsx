@@ -3,6 +3,7 @@ import axios from 'axios'
 import Link from 'next/link'
 import { FormEvent, useEffect } from 'react';
 import GoogleIcon from "../../../public/google.svg";
+import GithubIcon from "../../../public/github-icon.svg";
 export default function Home() {
 
   async function signIn(e : FormEvent) {
@@ -57,7 +58,8 @@ export default function Home() {
               <Link href="http://localhost:4000/auth/to-google" className='ml-1 text-black'>구글 로그인</Link>          
             </button>
             <button className='btn btn-outline flex-1'> 
-              <p>카카오 로그인</p>
+              <p><GithubIcon/></p>
+              <Link href="http://localhost:4000/auth/to-github" className='ml-1 text-black'>깃허브 로그인</Link>  
             </button>
           </div>
       </form>
