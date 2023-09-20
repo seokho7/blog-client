@@ -34,7 +34,7 @@ export default function Home() {
   // },[])
   
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-black text-center mb-6 text-2xl">로그인</h1>
       <form onSubmit={signIn} className="form-control w-full max-w-xs">
         <label className="label">
@@ -54,14 +54,14 @@ export default function Home() {
           <button className="btn btn-outline btn-success mt-5">로그인</button>
       </form>
       <div className='sub-btn-wrap flex mt-3 justify-around gap-3 w-full max-w-xs'>
-        <button className="btn btn-outline google-btn flex-1">
+        <Link href="http://localhost:4000/auth/to-google" className='btn btn-outline google-btn flex-1'>
           <p><GoogleIcon/></p>
-          <Link href="http://localhost:4000/auth/to-google" className='ml-1 text-black'>구글 로그인</Link>          
-        </button>
-        <button className='btn btn-outline flex-1'> 
+          <p className='ml-1 text-black'>구글 로그인</p>
+        </Link>
+        <Link href="http://localhost:4000/auth/to-github" className='btn btn-outline google-btn flex-1'>
           <p><GithubIcon/></p>
-          <Link href="http://localhost:4000/auth/to-github" className='ml-1 text-black'>깃허브 로그인</Link>  
-        </button>
+          <p className='ml-1 text-black'>깃허브 로그인</p>
+        </Link>
       </div>
       <div className="form-control w-full max-w-xs">
         <div className="text-xs flex justify-around mt-6">

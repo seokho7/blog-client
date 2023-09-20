@@ -33,7 +33,7 @@ export default function SignUp() {
     return false;
   }
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-black text-center mb-6 text-2xl">회원가입</h1>
       <form className='form-control w-full max-w-xs' onSubmit={signUp}>
         <label className="label">
