@@ -1,15 +1,46 @@
 'use client'
 import axios from 'axios'
 import Link from 'next/link'
-import { FormEvent } from 'react';
+import { ChangeEvent, FormEvent, MouseEventHandler, useState } from 'react';
+
+type sOrn = string | null;
+
 interface signUpDto {
-  "USER_EMAIL" : string,
-  "USER_PW" : string,
-  "USER_PHONE" : string,
-  "USER_NICKNAME" : string,
-  "USER_NAME" : string
+  "USER_EMAIL" : sOrn,
+  "USER_PW" : sOrn,
+  "USER_PHONE" : sOrn,
+  "USER_NICKNAME" : sOrn,
+  "USER_NAME" : sOrn
 }
+
 export default function SignUp() {
+  const [userInfo, setUserInfo] = useState<signUpDto>({
+    "USER_EMAIL" : "",
+    "USER_PW" : "",
+    "USER_PHONE" : "",
+    "USER_NICKNAME" : "",
+    "USER_NAME" : ""
+  })
+  const { USER_EMAIL, USER_PW, USER_PHONE, USER_NICKNAME, USER_NAME } = userInfo;
+  const [lodingState, setLodingState] = useState(false);
+
+  const inputHandler = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length > e.target.maxLength){
+      e.target.value = e.target.value.slice(0, e.target.maxLength);
+    }
+
+    const { name, value } = e.target;
+    setUserInfo({
+      ...userInfo,
+      [name]: value
+    })
+    console.log(userInfo)
+  }
+
+  const inputLengthGuard = (e : ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length > e.target.maxLength)
+    e.target.value = e.target.value.slice(0, e.target.maxLength);
+  }
 
   async function signUp(e : FormEvent) : Promise<boolean>{
     e.preventDefault();
@@ -32,6 +63,19 @@ export default function SignUp() {
     .catch((err)=> console.log(err))
     return false;
   }
+
+  async function smsAuth(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    setLodingState(true);
+    console.log(USER_PHONE)
+    await axios.post("http://localhost:4000/auth/smsAuth",{
+      // "USER_PHONE" : 
+    })
+    .then(res => {
+      if(res.data === true) setLodingState(false)
+    })
+    .catch((err)=> console.log(err))
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center">
       <h1 className="text-black text-center mb-6 text-2xl">회원가입</h1>
@@ -39,32 +83,38 @@ export default function SignUp() {
         <label className="label">
           <span className="label-text text-black">이메일</span>
         </label>
-        <input name='USER_EMAIL' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="example@naver.com" />
+        <input name='USER_EMAIL' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="example@naver.com" onChange={inputHandler}/>
 
         <label className="label">
           <span className="label-text text-black">비밀번호</span>
         </label>
-        <input name='USER_PW' type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20}/>
+        <input name='USER_PW' type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20} onChange={inputHandler}/>
 
         <label className="label">
           <span className="label-text text-black">비밀번호 확인</span>
         </label>
-        <input type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20}/>
+        <input type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20} onChange={inputHandler}/>
 
         <label className="label">
           <span className="label-text text-black">이름</span>
         </label>
-        <input name='USER_NAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={20}/>
+        <input name='USER_NAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={20} onChange={inputHandler}/>
 
         <label className="label">
           <span className="label-text text-black">휴대폰</span>
         </label>
-        <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={11}/>
+
+        <div className='flex gap-2'>
+          <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={11} onChange={inputHandler}/>
+          <div className={`input input-bordered btn btn-success bg-white label-text text-black border-slate-300 text-gray-300`} onClick={ smsAuth}>
+            <span className={`text-sm whitespace-nowrap ${ lodingState ? 'loading loading-spinner' : null}`}>전송</span>  
+          </div>
+        </div>
 
         <label className="label">
           <span className="label-text text-black">닉네임</span>
         </label>
-        <input name='USER_NICKNAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={10}/>
+        <input name='USER_NICKNAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={10} onChange={inputHandler}/>
 
         <button className="btn btn-outline btn-success mt-8">회원가입</button>
 

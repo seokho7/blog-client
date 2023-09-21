@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { FormEvent, useEffect } from 'react';
 import GoogleIcon from "../../../public/google.svg";
 import GithubIcon from "../../../public/github-icon.svg";
+import ImsiIcon from "../../../public/imsi_icon.png";
+import Image from 'next/image';
 export default function Home() {
 
   async function signIn(e : FormEvent) {
@@ -17,7 +19,7 @@ export default function Home() {
         registerUserInfo[curInput.name] = curInput.value;
       }
     }
-    await axios.post("http://localhost:4000/auth/sessionLoginTest", registerUserInfo, { withCredentials: true })
+    await axios.post("http://localhost:4000/auth/sessionLogin", registerUserInfo, { withCredentials: true })
     .then(res => {
       if(res.data) return location.replace('/main');
       console.log("dd")
@@ -46,9 +48,9 @@ export default function Home() {
         </label>
         <input name="USER_PW" type="password" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="******" minLength={8} maxLength={20} />
         <div className="form-control">
-          <label className="cursor-pointer label justify-normal">
+          <label className="label justify-normal ">
             <input type="checkbox" className="checkbox checkbox-accent mr-2" />
-            <span className="label-text text-gray-500">이메일 저장</span>
+            <span className="cursor-pointer label-text text-gray-500">이메일 저장</span>
           </label>
         </div>
           <button className="btn btn-outline btn-success mt-5">로그인</button>
@@ -65,9 +67,9 @@ export default function Home() {
       </div>
       <div className="form-control w-full max-w-xs">
         <div className="text-xs flex justify-around mt-6">
-          <Link href={'/'} className="text-black text-gray-500">이메일 찾기</Link>
+          <Link href={'/findInfo/email'} className="text-black text-gray-500">이메일 찾기</Link>
           <p className="text-gray-500 ">|</p>
-          <Link href={'/'} className="text-black text-gray-500">비밀번호 찾기</Link>
+          <Link href={'/findInfo/password'} className="text-black text-gray-500">비밀번호 찾기</Link>
           <p className="text-gray-500 ">|</p>
           <Link href={'/sign-up'} className="text-black text-gray-500">회원가입</Link>
         </div>
