@@ -68,12 +68,16 @@ export default function SignUp() {
     setLodingState(true);
     console.log(USER_PHONE)
     await axios.post("http://localhost:4000/auth/smsAuth",{
-      // "USER_PHONE" : 
+      "USER_PHONE" : USER_PHONE
     })
     .then(res => {
       if(res.data === true) setLodingState(false)
     })
     .catch((err)=> console.log(err))
+  }
+
+  async function smsDisable() {
+    console.log("중복 방지")
   }
 
   return (
@@ -106,7 +110,7 @@ export default function SignUp() {
 
         <div className='flex gap-2'>
           <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={11} onChange={inputHandler}/>
-          <div className={`input input-bordered btn btn-success bg-white label-text text-black border-slate-300 text-gray-300`} onClick={ smsAuth}>
+          <div className={`input input-bordered btn btn-success bg-white label-text text-black border-slate-300 text-gray-300`} onClick={ lodingState ? smsDisable : smsAuth}>
             <span className={`text-sm whitespace-nowrap ${ lodingState ? 'loading loading-spinner' : null}`}>전송</span>  
           </div>
         </div>
