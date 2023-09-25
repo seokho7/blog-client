@@ -71,7 +71,12 @@ export default function SignUp() {
       "USER_PHONE" : USER_PHONE
     })
     .then(res => {
-      if(res.data === true) setLodingState(false)
+      if(res.data === true){
+        console.log("성공!")
+        setLodingState(true)
+      }else{
+        setLodingState(false)
+      } 
     })
     .catch((err)=> console.log(err))
   }
