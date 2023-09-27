@@ -1,7 +1,7 @@
 'use client'
 import axios from 'axios'
 import Link from 'next/link'
-import { ChangeEvent, FormEvent, MouseEventHandler, useEffect, useState } from 'react';
+import { ChangeEvent, FormEvent, MouseEventHandler, useCallback, useEffect, useState } from 'react';
 
 type sOrn = string | null;
 
@@ -26,17 +26,21 @@ export default function SignUp() {
   })
 
   const { USER_EMAIL, USER_PW, USER_PW_CONFIRM, USER_PHONE, USER_NICKNAME, USER_NAME } = userInfo;
-
   const [isEmail, setIsEmail] = useState(true);
   const [isPassword, setIsPassword] = useState(true);
   const [isPasswordConfirm, setIsPasswordConfirm] = useState(true);
   const [isName, setIsName] = useState(true);
   const [isPhone, setIsPhone] = useState(true);
   const [isNickname, setIsNickname] = useState(true);
-
+  
   const [lodingState, setLodingState] = useState(false);
   const [smsCodeState, setSmsCodeState] = useState(false);
-  
+  const [authCodeInit, setAuthCodeInit] = useState(true);
+  const [smsAuthCode, setSmsAuthCode]  = useState("");
+  const [matchSmsCode, setMatchSmsCode] = useState(false);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+
   const inputHandler = (e: ChangeEvent<HTMLInputElement>) => {
     let curName = e.target.name;
     function sliceValue(length: number) {
@@ -45,10 +49,26 @@ export default function SignUp() {
       }
     }
 
-    if(curName === 'USER_PW' || curName === 'USER_PW_CONFIRM') sliceValue(25);
-    if(curName === 'USER_NAME') sliceValue(20);
-    if(curName === 'USER_PHONE') sliceValue(11);
-    if(curName === 'USER_NICKNAME') sliceValue(10);
+    if(curName === 'USER_EMAIL'){
+      setIsEmail(true);
+    }
+    if(curName === 'USER_PW' || curName === 'USER_PW_CONFIRM'){
+      sliceValue(25);
+      setIsPassword(true);
+      setIsPasswordConfirm(true);
+    } 
+    if(curName === 'USER_NAME'){
+      sliceValue(20);
+      setIsName(true)
+    } 
+    if(curName === 'USER_PHONE'){
+      sliceValue(11);
+      setIsPhone(true);
+    } 
+    if(curName === 'USER_NICKNAME'){
+      sliceValue(10);
+      setIsNickname(true)
+    } 
 
     const { name, value } = e.target;
     setUserInfo({
@@ -107,11 +127,14 @@ export default function SignUp() {
     }
   }
 
-  const smsInputHandler = (e: ChangeEvent<HTMLInputElement>) => {
+  const smsInputHandler = useCallback ((e: ChangeEvent<HTMLInputElement>) => {
+    
     if (e.target.value.length > 6){
       e.target.value = e.target.value.slice(0, 6);
     }
-  }
+    setAuthCodeInit(true);
+    setSmsAuthCode(e.target.value);
+  },[])
 
   async function signUp(e : FormEvent) : Promise<boolean>{
     e.preventDefault();
@@ -146,35 +169,61 @@ export default function SignUp() {
     }
   }
 
-  async function smsAuth(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
-    setLodingState(true);
-    if(USER_PHONE && USER_PHONE.length === 11){
-      setSmsCodeState(true);
-      setLodingState(false);
-      await axios.post("http://localhost:4000/auth/smsAuth",{
-        "USER_PHONE" : USER_PHONE
-      })
-      .then(res => {
-        if(res.data === true){
-          console.log("성공!")
-          setLodingState(false)
-        }
-      })
-      .catch((err)=> console.log(err))
-    }else{
-      setLodingState(false);
-      console.log("제대로 입력해라")
-    }
+  async function sendCode(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+      setLodingState(true);
+      if(USER_PHONE?.length === 11 && USER_PHONE?.indexOf("010") === 0 ){
+        setSmsCodeState(true);
+        setLodingState(false);
+        setMinutes(3)
+        await axios.post("http://localhost:4000/auth/sendCode",{
+          "USER_PHONE" : USER_PHONE
+        })
+        .then(res => {
+          if(res.data === true){
+            console.log("성공!")
+            setLodingState(false)
+          }
+        })
+        .catch((err)=> console.log(err))
+      }else{
+        setIsPhone(false)
+        setLodingState(false);
+  
+        console.log("제대로 입력해라")
+      }
   }
 
   async function smsDisable() {
     console.log("중복 방지")
   }
 
-  const [minutes, setMinutes] = useState(3);
-  const [seconds, setSeconds] = useState(0);
+  async function validateCode() {
+    console.log(smsAuthCode)
+    if(smsAuthCode?.length !== 6){
+      setAuthCodeInit(false);
+    }else{
+      await axios.post("http://localhost:4000/auth/validateCode",{
+        "USER_PHONE":USER_PHONE,
+        "USER_SMS_AUTH_CODE": smsAuthCode
+      }).then(res => {
+        if(res.data == true){
+          setAuthCodeInit(false);
+          setMatchSmsCode(true);
+        }else{
+          setAuthCodeInit(false);
+        }
+        console.log(res.data)
+      }).catch(err => console.log(err))
+    }
+  }
   
   useEffect(() => {
+    if(matchSmsCode){
+      setMinutes(0);
+      setAuthCodeInit(false)
+      setSmsCodeState(false)
+      return;
+    } 
     const countdown = setInterval(() => {
       if (seconds > 0) {
         setSeconds(seconds - 1);
@@ -182,6 +231,7 @@ export default function SignUp() {
       if (seconds === 0) {
         if (minutes === 0) {
           clearInterval(countdown);
+          setAuthCodeInit(true);
           setSmsCodeState(false)
         } else {
           setMinutes(minutes - 1);
@@ -197,12 +247,22 @@ export default function SignUp() {
       <div>
         <div className='flex gap-2 '>
           <div className='relative w-full'>
-            <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black text-sm" onChange={smsInputHandler} placeholder='인증번호 6자리'/>
+            <input name='USER_SMS_AUTH_CODE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black text-sm" onChange={smsInputHandler} placeholder='인증번호 6자리'/>
             <p className='text-base-content text-xs absolute right-3 top-4'>{minutes}:{seconds < 10 ? `0${seconds}` : seconds}</p>
           </div>
-          <div className='input input-bordered btn btn-success bg-white label-text border-slate-300 text-gray-300 whitespace-nowrap right-0'>확인</div>
+          <div className={`input input-bordered btn btn-success bg-white label-text border-slate-300 text-gray-300 whitespace-nowrap right-0`} onClick={validateCode}>확인</div>
         </div>        
-        {/* <p className='label-text text-xs text-error ml-2'>인증번호가 일치하지 않습니다. 다시 한 번 확인해주세요.</p> */}
+        {
+          authCodeInit 
+          ?
+          <p className='label-text text-xs text-success ml-2'>인증번호를 입력해주세요.</p> 
+          :          
+          matchSmsCode 
+          ? 
+            null
+          :
+          <p className='label-text text-xs text-error ml-2'>올바른 인증번호를 입려해주세요.</p>
+        }
       </div>
     )
   }
@@ -249,13 +309,13 @@ export default function SignUp() {
         </label>
         <div className='flex gap-2'>
           <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" onChange={inputHandler}/>
-          <div className={`input input-bordered btn ${smsCodeState ? 'btn-disabled' :  'btn-success'} bg-white label-text text-black border-slate-300 text-gray-300 `} onClick={ lodingState ? smsDisable : smsAuth}>
+          <div className={`input input-bordered btn ${smsCodeState || matchSmsCode ? 'btn-disabled' :  'btn-success'} bg-white label-text text-black border-slate-300 text-gray-300 `} onClick={ lodingState ? smsDisable : sendCode}>
             <span className={`text-sm whitespace-nowrap ${ lodingState ? 'loading loading-spinner' : null}`}>전송</span>  
           </div>
         </div>
-        {!isPhone ? <p className='label-text text-xs text-error ml-2 mb-2'>휴대폰 번호 11자리를 올바르게 입력해주세요.</p> : null}
+        {!isPhone ? <p className='label-text text-xs text-error ml-2 mb-2'>휴대폰 번호 11자리를 올바르게 입력해주세요.</p> : matchSmsCode ? <p className='label-text text-xs text-success ml-2'>인증되었습니다.</p>  : null}
         {
-          smsCodeState ? smsCodeInputEle() : null
+          smsCodeState && !matchSmsCode ? smsCodeInputEle() : null
         }
         <label className="label">
           <span className="label-text text-black">닉네임</span>
