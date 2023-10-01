@@ -2,6 +2,7 @@
 import axios from 'axios'
 import Link from 'next/link'
 import { ChangeEvent, FormEvent, MouseEventHandler, useCallback, useEffect, useState } from 'react';
+import { smsResStep } from '../common/types/smsResponse';
 
 type sOrn = string | null;
 
@@ -27,17 +28,21 @@ export default function SignUp() {
 
   const { USER_EMAIL, USER_PW, USER_PW_CONFIRM, USER_PHONE, USER_NICKNAME, USER_NAME } = userInfo;
   const [isEmail, setIsEmail] = useState(true);
+  const [isDoubleEmail, setIsDoubleEmail] = useState(true);
   const [isPassword, setIsPassword] = useState(true);
   const [isPasswordConfirm, setIsPasswordConfirm] = useState(true);
   const [isName, setIsName] = useState(true);
   const [isPhone, setIsPhone] = useState(true);
   const [isNickname, setIsNickname] = useState(true);
+  const [isDoubleNickname, setIsDoubleNickname] = useState(true);
   
   const [lodingState, setLodingState] = useState(false);
   const [smsCodeState, setSmsCodeState] = useState(false);
   const [authCodeInit, setAuthCodeInit] = useState(true);
   const [smsAuthCode, setSmsAuthCode]  = useState("");
   const [matchSmsCode, setMatchSmsCode] = useState(false);
+  const [fastTrySmsCode, setFastTrySmsCode] = useState(false);
+  const [reTrySmsCode, setReTrySmsCode] = useState(false);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
 
@@ -64,6 +69,8 @@ export default function SignUp() {
     if(curName === 'USER_PHONE'){
       sliceValue(11);
       setIsPhone(true);
+      setFastTrySmsCode(false);
+      setReTrySmsCode(false);
     } 
     if(curName === 'USER_NICKNAME'){
       sliceValue(10);
@@ -158,11 +165,13 @@ export default function SignUp() {
       
       await axios.post("http://localhost:4000/auth/register", registerUserInfo )
       .then(res => {
-        if(res.status === 201){
-          location.replace('/');
-        }
+        if(res.status === 201) location.replace('/');
       })
-      .catch((err)=> console.log(err))
+      .catch((err)=> {
+        const detailMsg = err.response.data.message;
+        if(detailMsg === 'U0001') setIsDoubleEmail(false);
+        if(detailMsg === 'U0002') setIsDoubleNickname(false);
+      })
       return true;
     }else{
       return false;
@@ -171,26 +180,32 @@ export default function SignUp() {
 
   async function sendCode(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
       setLodingState(true);
-      if(USER_PHONE?.length === 11 && USER_PHONE?.indexOf("010") === 0 ){
-        setSmsCodeState(true);
-        setLodingState(false);
-        setMinutes(3)
+      if(USER_PHONE?.length === 11 && USER_PHONE?.indexOf("010") === 0 ){        
         await axios.post("http://localhost:4000/auth/sendCode",{
           "USER_PHONE" : USER_PHONE
         })
         .then(res => {
-          if(res.data === true){
+          const result : smsResStep = res.data;
+          if(result.resState === true){
+            setSmsCodeState(true);
+            setMinutes(3)
             console.log("성공!")
-            setLodingState(false)
+          }else{
+            const failBody = result.failStep;
+            switch(failBody){
+              case 'reSubmit' : {setIsPhone(false); break}
+              case 'fastTry' : {setFastTrySmsCode(true); break}
+              case 'redisOff' : {console.log("쿠키스텝"); break}
+              case 'reTry' : {setReTrySmsCode(true); break}
+            }
           }
         })
-        .catch((err)=> console.log(err))
+        .catch((err)=> console.log(err))        
       }else{
         setIsPhone(false)
-        setLodingState(false);
-  
         console.log("제대로 입력해라")
       }
+      setLodingState(false);
   }
 
   async function smsDisable() {
@@ -268,7 +283,7 @@ export default function SignUp() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center">
+    <main className="flex min-h-screen flex-col items-center justify-center pt-5 pb-5">
       <h1 className="text-black text-center mb-6 text-2xl">회원가입</h1>
       <form className='form-control w-full max-w-xs' onSubmit={signUp}>
         <label className="label">
@@ -277,6 +292,7 @@ export default function SignUp() {
         <div>
           <input name='USER_EMAIL' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" placeholder="example@naver.com" onChange={inputHandler}/>
           {!isEmail ? <p className='label-text text-xs text-error ml-2'>올바른 이메일 형식을 입력해주세요.</p> : null}
+          {!isDoubleEmail ? <p className='label-text text-xs text-error ml-2'>중복된 이메일 입니다.</p> : null}
         </div>
 
         <label className="label">
@@ -308,29 +324,36 @@ export default function SignUp() {
           <span className="label-text text-black">휴대폰</span>
         </label>
         <div className='flex gap-2'>
-          <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" onChange={inputHandler}/>
+          <input name='USER_PHONE' type="number" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" onChange={inputHandler} disabled={smsCodeState || matchSmsCode ? true : false}/>
           <div className={`input input-bordered btn ${smsCodeState || matchSmsCode ? 'btn-disabled' :  'btn-success'} bg-white label-text text-black border-slate-300 text-gray-300 `} onClick={ lodingState ? smsDisable : sendCode}>
             <span className={`text-sm whitespace-nowrap ${ lodingState ? 'loading loading-spinner' : null}`}>전송</span>  
           </div>
         </div>
-        {!isPhone ? <p className='label-text text-xs text-error ml-2 mb-2'>휴대폰 번호 11자리를 올바르게 입력해주세요.</p> : matchSmsCode ? <p className='label-text text-xs text-success ml-2'>인증되었습니다.</p>  : null}
+        {
+          !isPhone ?
+            <p className='label-text text-xs text-error ml-2 mb-2'>휴대폰 번호 11자리를 올바르게 입력해주세요.</p>
+          : fastTrySmsCode ? 
+            <p className='label-text text-xs text-error ml-2 mb-2'>중복 발송: 3분 뒤에 다시 요청해주세요.</p>
+          : reTrySmsCode ? 
+            <p className='label-text text-xs text-error ml-2 mb-2'>일시적인 오류: 다시 요청해주세요.</p>
+          : matchSmsCode ? 
+            <p className='label-text text-xs text-success ml-2'>인증되었습니다.</p>  
+          : null}
         {
           smsCodeState && !matchSmsCode ? smsCodeInputEle() : null
         }
         <label className="label">
           <span className="label-text text-black">닉네임</span>
         </label>
-        <input name='USER_NICKNAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" maxLength={10} onChange={inputHandler}/>
+        <input name='USER_NICKNAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" onChange={inputHandler}/>
         {!isNickname ? <p className='label-text text-xs text-error ml-2'>닉네임은 최소 2글자 이상, 10글자 이하로 입력해주세요.</p> : null}
+        {!isDoubleNickname ? <p className='label-text text-xs text-error ml-2'>중복된 닉네임 입니다.</p> : null}
 
         <button className="btn btn-outline btn-success mt-8">회원가입</button>
 
       </form>
       <div className="text-xs flex justify-around mt-6">
         <Link href={'/sign-in'} className="text-black text-gray-500">로그인 하기</Link>
-      </div>
-      <div className="text-neutral-content absolute left-0 bottom-10 flex justify-center w-full">
-        <small>&copy; Seokho Got Corp</small>
       </div>
     </main>
   )

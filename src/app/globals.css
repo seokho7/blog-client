@@ -63,3 +63,14 @@ input:-webkit-autofill:active {
     -webkit-box-shadow: 0 0 0px 1000px white inset !important;
     -webkit-text-fill-color: #000 !important;
 }
+
+.input-disabled,
+  .input:disabled,
+  .input[disabled] {
+  cursor: not-allowed;
+  --tw-border-opacity: 0.2;
+  border-color: none;
+  --tw-bg-opacity: 0;
+  background-color: none !important;
+  --tw-text-opacity: 0.2;
+}

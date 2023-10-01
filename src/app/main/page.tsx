@@ -44,7 +44,7 @@ export default function Main() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+    <main className="flex min-h-screen flex-col items-center justify-center pt-5 pb-5">
       {init ?  start() : fali()}
     </main>
   )

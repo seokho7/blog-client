@@ -36,7 +36,7 @@ export default function Home() {
   // },[])
   
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center">
+    <main className="flex min-h-screen flex-col items-center justify-center pt-5 pb-5">
       <h1 className="text-black text-center mb-6 text-2xl">로그인</h1>
       <form onSubmit={signIn} className="form-control w-full max-w-xs">
         <label className="label">
@@ -73,9 +73,6 @@ export default function Home() {
           <p className="text-gray-500 ">|</p>
           <Link href={'/sign-up'} className="text-black text-gray-500">회원가입</Link>
         </div>
-      </div>
-      <div className="text-neutral-content absolute left-0 bottom-10 flex justify-center w-full">
-        <small>&copy; Seokho Got Corp</small>
       </div>
     </main>
   )
