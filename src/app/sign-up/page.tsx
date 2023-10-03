@@ -35,7 +35,8 @@ export default function SignUp() {
   const [isPhone, setIsPhone] = useState(true);
   const [isNickname, setIsNickname] = useState(true);
   const [isDoubleNickname, setIsDoubleNickname] = useState(true);
-  
+  const [isDoubleUser,setIsDoubleUser] = useState(true);
+
   const [lodingState, setLodingState] = useState(false);
   const [smsCodeState, setSmsCodeState] = useState(false);
   const [authCodeInit, setAuthCodeInit] = useState(true);
@@ -56,6 +57,7 @@ export default function SignUp() {
 
     if(curName === 'USER_EMAIL'){
       setIsEmail(true);
+      setIsDoubleEmail(true);
     }
     if(curName === 'USER_PW' || curName === 'USER_PW_CONFIRM'){
       sliceValue(25);
@@ -71,10 +73,12 @@ export default function SignUp() {
       setIsPhone(true);
       setFastTrySmsCode(false);
       setReTrySmsCode(false);
+      setIsDoubleUser(true)
     } 
     if(curName === 'USER_NICKNAME'){
       sliceValue(10);
       setIsNickname(true)
+      setIsDoubleNickname(true);
     } 
 
     const { name, value } = e.target;
@@ -151,28 +155,33 @@ export default function SignUp() {
     let nameOn = inputValidCheck('name', USER_NAME);
     let phoneOn = inputValidCheck('phone', USER_PHONE);
     let nicknameOn = inputValidCheck('nickname', USER_NICKNAME);
-
     if(emailOn && passwordOn && passwordConfirmOn && nameOn && phoneOn && nicknameOn){
-      const userInfo = document.querySelectorAll("input");
-      let registerUserInfo : any = {};
-  
-      for(let i = 0; i < userInfo.length; i++){
-        let curInput = userInfo[i];
-        if(curInput.name){
-          registerUserInfo[curInput.name] = curInput.value;
-        }
+      if(!matchSmsCode) {
+        window.alert("휴대폰 인증을 완료해주세요.");
+        return false
+      }else{
+        // const userInfo = document.querySelectorAll("input");
+        // let registerUserInfo : any = {};
+    
+        // for(let i = 0; i < userInfo.length; i++){
+        //   let curInput = userInfo[i];
+        //   if(curInput.name){
+        //     registerUserInfo[curInput.name] = curInput.value;
+        //   }
+        // }
+        
+        await axios.post("http://localhost:4000/auth/register", userInfo )
+        .then(res => {
+          if(res.status === 201) location.replace('/');
+        })
+        .catch((err)=> {
+          const detailMsg = err.response.data.message;
+          if(detailMsg === 'U0001') setIsDoubleEmail(false);
+          if(detailMsg === 'U0002') setIsDoubleNickname(false);
+          if(detailMsg === 'U0003') setIsDoubleUser(false);
+        })
+        return true;
       }
-      
-      await axios.post("http://localhost:4000/auth/register", registerUserInfo )
-      .then(res => {
-        if(res.status === 201) location.replace('/');
-      })
-      .catch((err)=> {
-        const detailMsg = err.response.data.message;
-        if(detailMsg === 'U0001') setIsDoubleEmail(false);
-        if(detailMsg === 'U0002') setIsDoubleNickname(false);
-      })
-      return true;
     }else{
       return false;
     }
@@ -285,7 +294,7 @@ export default function SignUp() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center pt-5 pb-5">
       <h1 className="text-black text-center mb-6 text-2xl">회원가입</h1>
-      <form className='form-control w-full max-w-xs' onSubmit={signUp}>
+      <form className='form-control w-full max-w-xs relative' onSubmit={signUp}>
         <label className="label">
           <span className="label-text text-black">이메일</span>
         </label>
@@ -348,9 +357,12 @@ export default function SignUp() {
         <input name='USER_NICKNAME' type="text" className="mb-2 input input-bordered w-full max-w-xs bg-white text-black" onChange={inputHandler}/>
         {!isNickname ? <p className='label-text text-xs text-error ml-2'>닉네임은 최소 2글자 이상, 10글자 이하로 입력해주세요.</p> : null}
         {!isDoubleNickname ? <p className='label-text text-xs text-error ml-2'>중복된 닉네임 입니다.</p> : null}
-
-        <button className="btn btn-outline btn-success mt-8">회원가입</button>
-
+        {
+          isDoubleUser ?
+          <button className="btn btn-outline btn-success mt-8">회원가입</button>
+          :
+          <div className="btn mt-8 btn btn-error">휴대폰당 1개의 계정만 등록가능합니다.</div>
+        }
       </form>
       <div className="text-xs flex justify-around mt-6">
         <Link href={'/sign-in'} className="text-black text-gray-500">로그인 하기</Link>
