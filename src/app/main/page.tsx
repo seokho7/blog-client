@@ -2,6 +2,11 @@
 import axios from 'axios'
 import Link from 'next/link'
 import { useEffect, useState } from 'react';
+import { Header } from '../common/layout/Header';
+import { Footer } from '../common/layout/Footer';
+import { Drawer } from '../common/layout/Drawer';
+
+
 export default function Main() {
 
   interface UserInfo {
@@ -33,7 +38,10 @@ export default function Main() {
 
   function start() {
     return(
-      <h1 className="text-black text-center mb-6 text-2xl">안녕하세요 {userInfo ? userInfo.USER_NICKNAME : null} 님</h1>
+      <div className='p-10'>
+        <h1 className="text-black text-center mb-6 text-2xl">안녕하세요 {userInfo ? userInfo.USER_NICKNAME : null} 님</h1>        
+      </div>
+      
     )
   }
 
@@ -44,8 +52,42 @@ export default function Main() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center pt-5 pb-5">
+    <main className="flex min-h-screen flex-col relative overflow-hidden ">
+      <Header/>
       {init ?  start() : fali()}
+      <div className='flex w-full p-10 flex-col items-center gap-10 text-gray-500'>
+        <div className="card w-96 shadow-xl">
+          <div className="card-body">
+            <h2 className="card-title">Card title!</h2>
+            <p>If a dog chews shoes whose shoes does he choose?</p>
+            <div className="card-actions justify-end">
+              <button className="btn btn-primary">Buy Now</button>
+            </div>
+          </div>
+        </div>
+        <div className="card w-96 shadow-xl">
+          <div className="card-body">
+            <h2 className="card-title">Card title!</h2>
+            <p>If a dog chews shoes whose shoes does he choose?</p>
+            <div className="card-actions justify-end">
+              <button className="btn btn-primary">Buy Now</button>
+            </div>
+          </div>
+        </div>
+        <div className="card w-96  shadow-xl">
+          <div className="card-body">
+            <h2 className="card-title">Card title!</h2>
+            <p>If a dog chews shoes whose shoes does he choose?</p>
+            <div className="card-actions justify-end">
+              <button className="btn btn-primary">Buy Now</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <Drawer/>
+      <Footer/>
     </main>
   )
 }

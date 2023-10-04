@@ -23,6 +23,16 @@ const config: Config = {
         prefix: "", // prefix for daisyUI classnames (components, modifiers and responsive class names. Not colors)
         logs: true, // Shows info about daisyUI version and used config in the console when building your CSS
       },      
+      borderWidth: {
+        DEFAULT: '1px',
+        '0': '0',
+        '1': `1px`,
+        '2': '2px',
+        '3': '3px',
+        '4': '4px',
+        '6': '6px',
+        '8': '8px',
+      }
     }
   },
   plugins: [require("daisyui")],

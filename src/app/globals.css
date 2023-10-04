@@ -90,3 +90,11 @@ input:-webkit-autofill:active {
   position: relative;
   animation: fadeInUp 1s;
 }
+
+.footer {
+  row-gap: 1rem !important
+}
+
+.drawer-side > .drawer-overlay {
+  cursor: auto ;
+}
